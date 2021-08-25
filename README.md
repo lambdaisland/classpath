@@ -8,35 +8,44 @@ Experimental utilities for dealing with "the classpath", and dynamically loading
 
 ## Usage
 
-```
+```clojure
 (require '[lambdaisland.classpath :as licp])
+```
 
 Get the current chain of classloaders
 
 ```clojure
-(classloader-chain)
+(licp/classloader-chain)
 ```
 
 Also see which entries each loader searches
 
 ```clojure
-(classpath-chain)
+(licp/classpath-chain)
 ```
 
 Update a gitlib in `deps.edn` to the latest `:git/sha` in `main` or in the specified `:git/branch`
 
 ```clojure
-(git-pull-lib 'com.lambdaisland/ornament)
+(licp/git-pull-lib 'com.lambdaisland/ornament)
 ```
 
 Add/override the classpath based on the current deps.edn.
 
 ```clojure
-(update-classpath!
+(licp/update-classpath!
   '{:aliases [:dev :test :licp]
     :extra {:deps {com.lambdaisland/webstuff {:local/root "/home/arne/github/lambdaisland/webstuff"}}}})
 ```
 
+Access specific class loaders
+
+```clojure
+(licp/context-class-loader)
+(licp/base-loader)
+(licp/root-loader)
+(licp/compiler-loader)
+```
 
 <!-- opencollective -->
 ## Lambda Island Open Source
