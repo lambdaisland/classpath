@@ -1,0 +1,6 @@
+{:paths ["src" "resources"]
+
+ :deps
+ {rewrite-clj/rewrite-clj {:mvn/version "1.0.682-alpha"}
+  org.clojure/tools.deps.alpha {:mvn/version "0.12.1030"}
+  com.lambdaisland/shellutils {:mvn/version "0.0.10"}}}
