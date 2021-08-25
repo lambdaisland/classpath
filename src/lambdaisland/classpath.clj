@@ -2,7 +2,6 @@
   (:require [rewrite-clj.zip :as z]
             [clojure.string :as str]
             [clojure.tools.deps.alpha :as deps]
-            [clojure.tools.deps.alpha.repl :as deps-repl]
             [clojure.tools.gitlibs :as gitlibs]
             [clojure.tools.gitlibs.impl :as gitlibs-impl]
             [clojure.java.classpath :as cp]
@@ -133,12 +132,14 @@
   Mainly meant for inspecting the current state of things."
   []
   (for [cl (classloader-chain)]
-    [(or (.getName cl)
-         (str cl)) (map str (cond
-                              (instance? URLClassLoader cl)
-                              (.getURLs cl)
-                              (= "app" (.getName cl))
-                              (cp/system-classpath)))]))
+    [(symbol
+      (or (.getName cl)
+          (str cl)))
+     (map str (cond
+                (instance? URLClassLoader cl)
+                (.getURLs cl)
+                (= "app" (.getName cl))
+                (cp/system-classpath)))]))
 
 (defn resources
   "The plural of [[clojure.java.io/resource]], find all resources with the given
@@ -176,7 +177,7 @@
                                    (cond
                                      (and (cp/jar-file? cp-entry)
                                           (some #{name} (cp/filenames-in-jar (JarFile. cp-entry))))
-                                     [(URL. (str "jar:file:" cp-entry "!" name))]
+                                     [(URL. (str "jar:file:" cp-entry "!/" name))]
                                      (.exists (io/file cp-entry name))
                                      [(URL. (str "file:" (io/file cp-entry name)))]))
                                  cp-files))]
@@ -246,10 +247,30 @@
    '{:aliases [:dev :test :licp]
      :extra {:deps {com.lambdaisland/webstuff {:local/root "/home/arne/github/lambdaisland/webstuff"}}}})
 
-
+  (classpath-chain)
   (resources "lambdaisland/webstuff/http.clj")
   (io/resource "lambdaisland/webstuff/http.clj")
 
   (classloader-chain)
   (classpath-chain)
+
+  (io/resource "clojure/main.class")
+  ;;=> #object[java.net.URL 0x3237dfe5 "jar:file:/home/arne/.m2/repository/org/clojure/clojure/1.10.3/clojure-1.10.3.jar!/clojure/main.class"]
+
+  (.getResource ^ClassLoader loader "clojure/main.class")
+
+  (defn xxx [])
+
+  (.loadClass (clojure.lang.RT/baseLoader) "user$xxx")
+  ;; user$xxx
+
+  (.loadClass (ClassLoader/getPlatformClassLoader) "lambdaisland.classpath$xxx")
+  ;; => java.lang.ClassNotFoundException
+
+
+  (group-by second
+            (map (juxt #(.getName %) #(some-> (.getClassLoader %) .getName))
+                 (.modules (java.lang.ModuleLayer/boot))))
+
+
   )
