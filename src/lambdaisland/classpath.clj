@@ -225,8 +225,8 @@
    AppClassLoader
    PlatformClassLoader]
 
-  We also monkey patch any shaded orchard.java.classpath namespaces on the
-  classpath (included with CIDER and refactor-nrepl) to use this classloader.
+  Do this for every thread that has a DynamicClassLoader as the context
+  classloader, or any of its parents.
 
   We need to do this from a separate thread, hence the `future` call, because
   nREPL's interruptible-eval resets the context-classloader at the end of the
@@ -235,21 +235,24 @@
    (install-priority-loader! []))
   ([paths]
    (let [urls (map #(URL. (str "file:" %)) paths)
-         dyn-cl (root-loader (context-classloader))
-         new-loader (priority-classloader dyn-cl urls)
-         threads (.keySet (Thread/getAllStackTraces))]
+         current-thread (Thread/currentThread)
+         dyn-cl (or (root-loader (context-classloader current-thread))
+                    (clojure.lang.DynamicClassLoader. (app-loader)))
+         new-loader (priority-classloader dyn-cl urls)]
      ;; Install a priority-classloader in every thread that currently has a
      ;; DynamicClassLoader
      (future
        (Thread/sleep 100)
-       (doseq [thread threads
-               :when (root-loader (context-classloader thread))]
-         (let []
-           (future
-             (Thread/sleep 100)
-             (.setContextClassLoader thread new-loader)))))
+       (doseq [thread (.keySet (Thread/getAllStackTraces))
+               ;; Install the new loader in every thread that has a Clojure
+               ;; loader, and always in the thread this is invoked in, even if
+               ;; for some reason it does not yet have a Clojure loader
+               :when (or (= thread current-thread)
+                         (root-loader (context-classloader thread)))]
+         (.setContextClassLoader thread new-loader)))
 
      ;; Force orchard to use "our" classloader
+     ;; Hoping this is no longer needed
      #_(doseq [filename (find-resources #"orchard.*java/classpath.clj")]
          (try
            (alter-var-root
