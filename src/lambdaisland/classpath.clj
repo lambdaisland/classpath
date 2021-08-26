@@ -48,8 +48,11 @@
 
 (defn context-classloader
   "Get the context classloader for the current thread"
-  ^ClassLoader []
-  (.getContextClassLoader (Thread/currentThread)))
+  ^ClassLoader
+  ([]
+   (context-classloader (Thread/currentThread)))
+  ([^Thread thread]
+   (.getContextClassLoader thread)))
 
 (defn base-loader
   "Get the loader that Clojure uses internally to load files
@@ -65,12 +68,17 @@
   ([]
    (root-loader (base-loader)))
   ([^ClassLoader cl]
-   (loop [loader cl]
-     (let [parent (.getParent loader)]
-       (if (or (instance? clojure.lang.DynamicClassLoader parent)
+   (when cl
+     (loop [loader cl]
+       (let [parent (.getParent loader)]
+         (cond
+           (or (instance? clojure.lang.DynamicClassLoader parent)
                (= (str `priority-classloader) (.getName parent)))
-         (recur parent)
-         loader)))))
+           (recur parent)
+
+           (or (instance? clojure.lang.DynamicClassLoader loader)
+               (= (str `priority-classloader) (.getName loader)))
+           loader))))))
 
 (defn compiler-loader
   "Get the clojure.lang.Compiler/LOADER, if set
@@ -214,17 +222,28 @@
   ([]
    (install-priority-loader! []))
   ([paths]
-   (let [thread (Thread/currentThread)
-         new-loader (priority-classloader (root-loader) (map #(URL. (str "file://" %)) paths))]
+   (let [urls (map #(URL. (str "file:" %)) paths)
+         dyn-cl (root-loader (context-classloader))
+         new-loader (priority-classloader dyn-cl urls)
+         threads (.keySet (Thread/getAllStackTraces))]
+     ;; Install a priority-classloader in every thread that currently has a
+     ;; DynamicClassLoader
      (future
        (Thread/sleep 100)
-       (.setContextClassLoader thread new-loader)
-       (doseq [filename (find-resources #"orchard.*java/classpath.clj")]
+       (doseq [thread threads
+               :when (root-loader (context-classloader thread))]
+         (let []
+           (future
+             (Thread/sleep 100)
+             (.setContextClassLoader thread new-loader)))))
+
+     ;; Force orchard to use "our" classloader
+     #_(doseq [filename (find-resources #"orchard.*java/classpath.clj")]
          (try
            (alter-var-root
             (requiring-resolve (symbol (file->ns-name filename) "context-classloader"))
             (constantly (constantly new-loader)))
-           (catch Exception e)))))))
+           (catch Exception e))))))
 
 (defn update-classpath!
   "Use the given options to construct a basis (see [[deps/create-basis]]), then
