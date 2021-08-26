@@ -80,6 +80,16 @@
                (= (str `priority-classloader) (.getName loader)))
            loader))))))
 
+(defn app-loader
+  "Get the application (aka system) classloader"
+  ^ClassLoader []
+  (ClassLoader/getSystemClassLoader))
+
+(defn platform-loader
+  "Get the platform classloader"
+  ^ClassLoader []
+  (ClassLoader/getPlatformClassLoader))
+
 (defn compiler-loader
   "Get the clojure.lang.Compiler/LOADER, if set
 
@@ -138,16 +148,18 @@
   "Return a list of classloader names, and the URLs they have on their classpath
 
   Mainly meant for inspecting the current state of things."
-  []
-  (for [cl (classloader-chain)]
-    [(symbol
-      (or (.getName cl)
-          (str cl)))
-     (map str (cond
-                (instance? URLClassLoader cl)
-                (.getURLs cl)
-                (= "app" (.getName cl))
-                (cp/system-classpath)))]))
+  ([]
+   (classpath-chain (context-classloader)))
+  ([cl]
+   (for [cl (classloader-chain cl)]
+     [(symbol
+       (or (.getName cl)
+           (str cl)))
+      (map str (cond
+                 (instance? URLClassLoader cl)
+                 (.getURLs cl)
+                 (= "app" (.getName cl))
+                 (cp/system-classpath)))])))
 
 (defn resources
   "The plural of [[clojure.java.io/resource]], find all resources with the given
