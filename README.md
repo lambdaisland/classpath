@@ -6,6 +6,14 @@
 
 Experimental utilities for dealing with "the classpath", and dynamically loading libraries.
 
+Blog post: [The Classpath is a Lie](https://lambdaisland.com/blog/2021-08-25-classpath-is-a-lie)
+
+## With thanks to Nextjournal!
+
+[Nextjournal](https://nextjournal.com/) provided the incentive and financial
+support to dive into this. Many thanks to them for pushing to move the needle on
+dev experience.
+
 ## Usage
 
 ### Watch `deps.edn`
