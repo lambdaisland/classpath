@@ -8,6 +8,22 @@ Experimental utilities for dealing with "the classpath", and dynamically loading
 
 ## Usage
 
+### Watch `deps.edn`
+
+```clojure
+(require '[lambdaisland.classpath.watch-deps :as watch-deps])
+
+(watch-deps/start! {:aliases [:dev :test]})
+```
+
+Whenever you change `deps.edn` this will pick up any extra libraries or changed
+versions, and add them to the classpath.
+
+Caveat: we can only *add* to the classpath, any dependencies that were present
+when the app started will remain accessible.
+
+### Classpath inspection and manipulation
+
 ```clojure
 (require '[lambdaisland.classpath :as licp])
 ```
