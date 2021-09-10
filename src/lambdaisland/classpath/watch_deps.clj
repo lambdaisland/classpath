@@ -1,6 +1,7 @@
 (ns lambdaisland.classpath.watch-deps
   "Watch deps.edn for changes"
   (:require [clojure.java.classpath :as cp]
+            [clojure.string :as str]
             [clojure.tools.deps.alpha :as deps]
             [lambdaisland.classpath :as licp]
             [nextjournal.beholder :as beholder]))
@@ -9,7 +10,7 @@
 
 (defn- on-event [opts {:keys [type path]}]
   (when (and (= :modify type)
-             (= "./deps.edn" (str path)))
+             (str/ends-with? (str path) "./deps.edn"))
     (println "✨ Reloading deps.edn ✨")
     (let [new-paths (remove (set (map str (cp/system-classpath)))
                             (:classpath-roots (deps/create-basis opts)))]
