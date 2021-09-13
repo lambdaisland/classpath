@@ -4,4 +4,6 @@
 
 ## Fixed
 
+* Watch-deps now triggers on Mac
+
 ## Changed
