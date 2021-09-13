@@ -10,6 +10,9 @@
 
 (defn- on-event [opts {:keys [type path]}]
   (when (and (= :modify type)
+             ;; On Mac the path will be absolute and include the watched dir,
+             ;; e.g. `/Users/x/project/./deps.edn`
+             ;; On other systems it seems to be relative, like `./deps.edn`
              (str/ends-with? (str path) "./deps.edn"))
     (println "✨ Reloading deps.edn ✨")
     (let [new-paths (remove (set (map str (cp/system-classpath)))
