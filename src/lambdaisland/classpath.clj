@@ -10,7 +10,10 @@
   (:import (java.util.jar JarFile JarEntry)
            (java.io File)
            (java.lang ClassLoader)
-           (java.net URL URLClassLoader)))
+           (java.net URL URLClassLoader)
+           (clojure.lang DynamicClassLoader)))
+
+#_(set! *warn-on-reflection* true)
 
 (defn read-basis
   "Read the basis (extended deps.edn) that Clojure started with, using the
@@ -64,7 +67,7 @@
 
 (defn root-loader
   "Find the bottom-most DynamicClassLoader in the chain of parent classloaders"
-  ^ClassLoader
+  ^DynamicClassLoader
   ([]
    (root-loader (base-loader)))
   ([^ClassLoader cl]
@@ -97,6 +100,17 @@
   it falls back to the context classloader."
   []
   @clojure.lang.Compiler/LOADER)
+
+(defn dynamic-classloader
+  "Construct a new DynamicClassLoader"
+  ^DynamicClassLoader
+  [^ClassLoader parent]
+  (clojure.lang.DynamicClassLoader. parent))
+
+(defn parent
+  "Get the parent classloader"
+  ^ClassLoader [^ClassLoader cl]
+  (.getParent cl))
 
 (defn classpath-directories
   "Returns a sequence of File objects for the directories on classpath."
@@ -142,7 +156,14 @@
   ([]
    (classloader-chain (base-loader)))
   ([cl]
-   (take-while identity (iterate #(.getParent %) cl))))
+   (take-while identity (iterate parent cl))))
+
+(defn cl-id
+  "return a symbol identifying the cl, mainly meant for concise printing"
+  [^ClassLoader cl]
+  (symbol
+   (or (.getName cl)
+       (str cl))))
 
 (defn classpath-chain
   "Return a list of classloader names, and the URLs they have on their classpath
@@ -151,13 +172,11 @@
   ([]
    (classpath-chain (context-classloader)))
   ([cl]
-   (for [cl (classloader-chain cl)]
-     [(symbol
-       (or (.getName cl)
-           (str cl)))
+   (for [^ClassLoader cl (classloader-chain cl)]
+     [(cl-id cl)
       (map str (cond
                  (instance? URLClassLoader cl)
-                 (.getURLs cl)
+                 (.getURLs ^URLClassLoader cl)
                  (= "app" (.getName cl))
                  (cp/system-classpath)))])))
 
@@ -169,7 +188,7 @@
   classpath multiple times."
   ([name]
    (resources (base-loader) name))
-  ([cl name]
+  ([^ClassLoader cl name]
    (enumeration-seq (.getResources cl name))))
 
 (defn priority-classloader
@@ -195,17 +214,26 @@
         find-resources (fn [^String name]
                          (mapcat (fn [^File cp-entry]
                                    (cond
+                                     (= \/ (first name))
+                                     (do
+                                       (println "WARN: Requested absolute path as resource" name)
+                                       [])
                                      (and (cp/jar-file? cp-entry)
                                           (some #{name} (cp/filenames-in-jar (JarFile. cp-entry))))
                                      [(URL. (str "jar:file:" cp-entry "!/" name))]
                                      (.exists (io/file cp-entry name))
                                      [(URL. (str "file:" (io/file cp-entry name)))]))
                                  cp-files))]
-    (proxy [URLClassLoader] [(str `priority-classloader) (into-array URL urls) cl]
+    (proxy [URLClassLoader] [^String (str "lambdaisland/"
+                                          (gensym "priority-classloader"))
+                             ^"[Ljava.net.URL;" (into-array URL urls)
+                             ^ClassLoader cl]
       (getResource [name]
         (or (first (find-resources name))
-            (.findResource (.getParent this) name)
-            (.getResource (.getParent this) name)))
+            ;; reflection warning because findResource is protected, but we're a
+            ;; subclass so it seems to be ok?
+            (.findResource (parent this) name)
+            (.getResource (parent this) name)))
       (getResources [name]
         (java.util.Collections/enumeration
          (distinct
@@ -213,8 +241,47 @@
            (find-resources name)
            (mapcat
             enumeration-seq
-            [(.findResources (.getParent this) name)
-             (.getResources (.getParent (.getParent this)) name)]))))))))
+            ;; reflection warning because findResource is protected, but we're a
+            ;; subclass so it seems to be ok?
+            [(.findResources (parent this) name)
+             (.getResources (parent (parent this)) name)]))))))))
+
+(def fg-red "\033[0;31m")
+(def fg-green "\033[0;32m")
+(def fg-yellow "\033[0;33m")
+(def fg-blue "\033[0;34m")
+(def fg-reset "\033[0m")
+
+(defn debug-context-classloader* [ns meta-form ^Thread thread cl]
+  (let [old-cl (context-classloader thread)
+        chain (classloader-chain cl)
+        old-chain (classloader-chain old-cl)
+        merge-base (some (set old-chain) chain)
+        short-id #(-> (cl-id %)
+                      (str/replace #".*@" "")
+                      (str/replace #".*/" ""))
+        sym (symbol (str "cl-" (short-id cl)))]
+    (intern 'user sym (constantly cl))
+    (println (str "[" (.getName thread) "]")
+             (str fg-yellow ns ":" (:line meta-form) ":" (:column meta-form)
+                  fg-blue " (user/" sym ")" fg-reset))
+    (if (= cl old-cl)
+      (do
+        (println (str fg-yellow "  No-op" fg-reset)))
+      (do
+        (run!
+         #(println fg-red " - " (cl-id %) '-> (short-id (parent %)) fg-reset)
+         (take-while #(not= merge-base %) old-chain))
+        (run!
+         #(println fg-green " + " (cl-id %) '-> (short-id (parent %)) fg-reset)
+         (take-while #(not= merge-base %) chain))))
+    (.setContextClassLoader thread cl)))
+
+(defmacro debug-context-classloader
+  "Replace calls to `.setContextClassloader` with this to get insights into
+  who/what/where/when/how is changing the classloader"
+  [thread cl]
+  `(debug-context-classloader* '~(ns-name *ns*) ~(meta &form) ~thread ~cl))
 
 (defn install-priority-loader!
   "Install the new priority loader as immediate parent of the bottom-most
@@ -234,6 +301,7 @@
   ([]
    (install-priority-loader! []))
   ([paths]
+   (println `install-priority-loader!)
    (let [urls (map #(URL. (str "file:" %)) paths)
          current-thread (Thread/currentThread)
          dyn-cl (or (root-loader (context-classloader current-thread))
@@ -242,14 +310,18 @@
      ;; Install a priority-classloader in every thread that currently has a
      ;; DynamicClassLoader
      (future
-       (Thread/sleep 100)
-       (doseq [thread (.keySet (Thread/getAllStackTraces))
-               ;; Install the new loader in every thread that has a Clojure
-               ;; loader, and always in the thread this is invoked in, even if
-               ;; for some reason it does not yet have a Clojure loader
-               :when (or (= thread current-thread)
-                         (root-loader (context-classloader thread)))]
-         (.setContextClassLoader thread new-loader)))
+       (try
+         (Thread/sleep 100)
+         (doseq [^Thread thread (.keySet (Thread/getAllStackTraces))
+                 ;; Install the new loader in every thread that has a Clojure
+                 ;; loader, and always in the thread this is invoked in, even if
+                 ;; for some reason it does not yet have a Clojure loader
+                 :when (or (= thread current-thread)
+                           (root-loader (context-classloader thread)))]
+           (debug-context-classloader #_.setContextClassLoader thread new-loader))
+         (catch Exception e
+           (println `install-priority-loader! e)
+           (.printStackTrace e))))
 
      ;; Force orchard to use "our" classloader
      ;; Hoping this is no longer needed
@@ -270,9 +342,12 @@
   any entries from the system classpath (the classpath the JVM booted with), but
   we can make sure any extra entries get precedence."
   [basis-opts]
+  (println `update-classpath!)
   (install-priority-loader!
    (remove (set (map str (cp/system-classpath)))
            (:classpath-roots (deps/create-basis basis-opts)))))
+
+
 
 (comment
   (git-pull-lib 'com.lambdaisland/webstuff)
