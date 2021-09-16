@@ -32,8 +32,11 @@
   (let [deps-file "deps.edn"
         loc (z/get (z/get (z/of-file deps-file) :deps) lib)
         coords (z/sexpr loc)
-        git-dir (gitlibs-impl/git-dir (:git/url coords))
+        git-url (:git/url coords)
+        git-dir (gitlibs-impl/git-dir git-url)
         git-branch (:git/branch coords "main")
+        _ (when-not (.isDirectory (io/file git-dir))
+            (gitlibs-impl/git-clone-bare git-url git-dir))
         _ (gitlibs-impl/git-fetch git-dir)
         sha (gitlibs-impl/git-rev-parse (str git-dir) git-branch)]
     (spit deps-file
@@ -316,6 +319,10 @@
                  ;; Install the new loader in every thread that has a Clojure
                  ;; loader, and always in the thread this is invoked in, even if
                  ;; for some reason it does not yet have a Clojure loader
+                 ;;
+                 ;; FIXME: this skips threads that were created before a DCL was
+                 ;; set, e.g. threads in the clojure-agent-send-off-pool (used
+                 ;; by futures) that are reused.
                  :when (or (= thread current-thread)
                            (root-loader (context-classloader thread)))]
            (debug-context-classloader #_.setContextClassLoader thread new-loader))
