@@ -68,6 +68,29 @@
   ^ClassLoader []
   (clojure.lang.RT/baseLoader))
 
+(defn cl-name
+  "Get a classlaoders's defined name"
+  [^ClassLoader cl]
+  (.getName cl))
+
+(defn cl-id
+  "return a symbol identifying the cl, mainly meant for concise printing"
+  [^ClassLoader cl]
+  (symbol
+   (or (.getName cl)
+       (str cl))))
+
+(defn dynamic-classloader?
+  "Is the given classloader a [[clojure.lang.DynamicClassLoader]]"
+  [cl]
+  (instance? clojure.lang.DynamicClassLoader cl))
+
+(defn priority-classloader?
+  "Is the given classloader a [[priority-classloader]]"
+  [cl]
+  (when-let [name (and cl (cl-name cl))]
+    (str/starts-with? name "lambdaisland/priority-classloader")))
+
 (defn root-loader
   "Find the bottom-most DynamicClassLoader in the chain of parent classloaders"
   ^DynamicClassLoader
@@ -78,12 +101,12 @@
      (loop [loader cl]
        (let [parent (.getParent loader)]
          (cond
-           (or (instance? clojure.lang.DynamicClassLoader parent)
-               (= (str `priority-classloader) (.getName parent)))
+           (or (dynamic-classloader? parent)
+               (priority-classloader? parent))
            (recur parent)
 
-           (or (instance? clojure.lang.DynamicClassLoader loader)
-               (= (str `priority-classloader) (.getName loader)))
+           (or (dynamic-classloader? loader)
+               (priority-classloader? loader))
            loader))))))
 
 (defn app-loader
@@ -160,13 +183,6 @@
    (classloader-chain (base-loader)))
   ([cl]
    (take-while identity (iterate parent cl))))
-
-(defn cl-id
-  "return a symbol identifying the cl, mainly meant for concise printing"
-  [^ClassLoader cl]
-  (symbol
-   (or (.getName cl)
-       (str cl))))
 
 (defn classpath-chain
   "Return a list of classloader names, and the URLs they have on their classpath
@@ -286,6 +302,9 @@
   [thread cl]
   `(debug-context-classloader* '~(ns-name *ns*) ~(meta &form) ~thread ~cl))
 
+(defn debug? []
+  (= "true" (System/getProperty "lambdaisland.classpath.debug")))
+
 (defn install-priority-loader!
   "Install the new priority loader as immediate parent of the bottom-most
   DynamicClassloader, discarding any further descendants. After this the chain is
@@ -300,11 +319,17 @@
 
   We need to do this from a separate thread, hence the `future` call, because
   nREPL's interruptible-eval resets the context-classloader at the end of the
-  evaluation, so this needs to happen after that has happened."
+  evaluation, so this needs to happen after that has happened.
+
+  Start the JVM with `-Dlambdaisland.classpath.debug=true` to get debugging
+  output.
+  "
   ([]
    (install-priority-loader! []))
   ([paths]
-   (println `install-priority-loader!)
+   (when (debug?)
+     (println "Installing priority-classloader")
+     (run! #(println "-" %) paths))
    (let [urls (map #(URL. (str "file:" %)) paths)
          current-thread (Thread/currentThread)
          dyn-cl (or (root-loader (context-classloader current-thread))
@@ -320,18 +345,22 @@
                  ;; loader, and always in the thread this is invoked in, even if
                  ;; for some reason it does not yet have a Clojure loader
                  ;;
-                 ;; FIXME: this skips threads that were created before a DCL was
-                 ;; set, e.g. threads in the clojure-agent-send-off-pool (used
-                 ;; by futures) that are reused.
-                 :when (or (= thread current-thread)
-                           (root-loader (context-classloader thread)))]
-           (debug-context-classloader #_.setContextClassLoader thread new-loader))
+                 ;; Currently disabled because this will skip over threads that
+                 ;; we do want to set, e.g. threads in the
+                 ;; clojure-agent-send-off-pool that were created (e.g. by
+                 ;; futures) before `clojure.main/repl` was called.
+                 #_#_:when (or (= thread current-thread)
+                               (root-loader (context-classloader thread)))]
+           (if (debug?)
+             (debug-context-classloader thread new-loader)
+             (.setContextClassLoader thread new-loader)))
          (catch Exception e
-           (println `install-priority-loader! e)
+           (println "Error in" `install-priority-loader! e)
            (.printStackTrace e))))
 
-     ;; Force orchard to use "our" classloader
-     ;; Hoping this is no longer needed
+     ;; Force orchard to use "our" classloader. This is a bit of nuclear option,
+     ;; if we can clean up some of nREPLs classloader handling this should not
+     ;; be necessary.
      #_(doseq [filename (find-resources #"orchard.*java/classpath.clj")]
          (try
            (alter-var-root
