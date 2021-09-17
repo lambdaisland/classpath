@@ -24,14 +24,8 @@
       (deps/slurp-deps f)
       (throw (IllegalArgumentException. "No basis declared in clojure.basis system property")))))
 
-(defn git-pull-lib
-  "Update the :git/sha in deps.edn for a given library to the latest sha in a branch
-
-  Uses `:git/branch` defaulting to `main`"
-  [lib]
-  (let [deps-file "deps.edn"
-        loc (z/get (z/get (z/of-file deps-file) :deps) lib)
-        coords (z/sexpr loc)
+(defn git-pull-lib* [loc lib]
+  (let [coords (z/sexpr loc)
         git-url (:git/url coords)
         git-dir (gitlibs-impl/git-dir git-url)
         git-branch (:git/branch coords "main")
@@ -39,9 +33,38 @@
             (gitlibs-impl/git-clone-bare git-url git-dir))
         _ (gitlibs-impl/git-fetch git-dir)
         sha (gitlibs-impl/git-rev-parse (str git-dir) git-branch)]
-    (spit deps-file
-          (z/root-string
-           (z/assoc loc :git/sha sha)))))
+    (z/assoc loc :git/sha sha)))
+
+(defn git-pull-lib
+  "Update the :git/sha in deps.edn for a given library to the latest sha in a branch
+
+  Uses `:git/branch` defaulting to `main`"
+  ([lib]
+   (git-pull-lib "deps.edn" lib))
+  ([deps-file lib]
+   (let [loc (z/of-file deps-file)]
+     (spit deps-file
+           (z/root-string
+            (as-> loc $
+              (if-let [loc (z/get (z/get $ :deps) lib)]
+                (z/up (z/up (git-pull-lib* loc lib)))
+                $)
+              (z/get $ :aliases)
+              (if-let [aliases (z/sexpr $)]
+                (reduce (fn [loc alias]
+                          (reduce
+                           (fn [loc dep-type]
+                             (if-let [loc (some-> loc
+                                                  (z/get alias)
+                                                  (z/get dep-type)
+                                                  (z/get lib))]
+                               (z/up (z/up (z/up (git-pull-lib* loc lib))))
+                               loc))
+                           loc
+                           [:extra-deps :override-deps :default-deps]))
+                        $
+                        (keys aliases))
+                $)))))))
 
 (defn classpath
   "clojure.java.classpath does not play well with the post-Java 9 application
