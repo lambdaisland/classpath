@@ -370,12 +370,13 @@
                  ;; loader, and always in the thread this is invoked in, even if
                  ;; for some reason it does not yet have a Clojure loader
                  ;;
-                 ;; Currently disabled because this will skip over threads that
-                 ;; we do want to set, e.g. threads in the
-                 ;; clojure-agent-send-off-pool that were created (e.g. by
-                 ;; futures) before `clojure.main/repl` was called.
-                 #_#_:when (or (= thread current-thread)
-                               (root-loader (context-classloader thread)))]
+                 ;; We also consider threads that currently have the application
+                 ;; loader set, this includes threads created by
+                 ;; futures/agents (clojure-agent-send-off-pool-*), before
+                 ;; `clojure.main/repl` installed its DynamicClassLoader
+                 :when (or (= thread current-thread)
+                           (root-loader (context-classloader thread))
+                           (= (app-loader) (context-classloader thread)))]
            (if (debug?)
              (debug-context-classloader thread new-loader)
              (.setContextClassLoader thread new-loader)))
