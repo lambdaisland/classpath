@@ -99,9 +99,11 @@
 (defn cl-id
   "return a symbol identifying the cl, mainly meant for concise printing"
   [^ClassLoader cl]
-  (symbol
-   (or (.getName cl)
-       (str cl))))
+  (if cl
+    (symbol
+     (or (.getName cl)
+         (str cl)))
+    'boot))
 
 (defn dynamic-classloader?
   "Is the given classloader a [[clojure.lang.DynamicClassLoader]]"
