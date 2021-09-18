@@ -259,8 +259,8 @@
                           (fn [^File jar-file]
                             (set
                              (eduction
-                              (map #(.getName ^JarEntry %))
                               (filter #(not (.isDirectory ^JarEntry %)))
+                              (map #(.getName ^JarEntry %))
                               (enumeration-seq (.entries (JarFile. jar-file)))))))
         find-resources (fn [^String name]
                          (mapcat (fn [^File cp-entry]
