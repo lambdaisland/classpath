@@ -258,14 +258,11 @@
         find-resources (fn [^String name]
                          (mapcat (fn [^File cp-entry]
                                    (cond
-                                     (= \/ (first name))
-                                     (do
-                                       (println "WARN: Requested absolute path as resource" name)
-                                       [])
                                      (and (cp/jar-file? cp-entry)
                                           (some #{name} (cp/filenames-in-jar (JarFile. cp-entry))))
                                      [(URL. (str "jar:file:" cp-entry "!/" name))]
-                                     (.exists (io/file cp-entry name))
+                                     (and (not (= \/ (first name))) ;; the io/file call fails on absolute paths
+                                          (.exists (io/file cp-entry name)))
                                      [(URL. (str "file:" (io/file cp-entry name)))]))
                                  cp-files))]
     (proxy [URLClassLoader] [^String (str "lambdaisland/"
