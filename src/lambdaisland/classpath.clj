@@ -255,11 +255,18 @@
   entries."
   [cl urls]
   (let [cp-files (map io/as-file urls)
+        filenames-in-jar (memoize
+                          (fn [^File jar-file]
+                            (set
+                             (eduction
+                              (map #(.getName ^JarEntry %))
+                              (filter #(not (.isDirectory ^JarEntry %)))
+                              (enumeration-seq (.entries (JarFile. jar-file)))))))
         find-resources (fn [^String name]
                          (mapcat (fn [^File cp-entry]
                                    (cond
                                      (and (cp/jar-file? cp-entry)
-                                          (some #{name} (cp/filenames-in-jar (JarFile. cp-entry))))
+                                          (contains? (filenames-in-jar cp-entry) name))
                                      [(URL. (str "jar:file:" cp-entry "!/" name))]
                                      (and (not (= \/ (first name))) ;; the io/file call fails on absolute paths
                                           (.exists (io/file cp-entry name)))
