@@ -404,7 +404,6 @@
   any entries from the system classpath (the classpath the JVM booted with), but
   we can make sure any extra entries get precedence."
   [basis-opts]
-  (println `update-classpath!)
   (install-priority-loader!
    (remove (set (map str (cp/system-classpath)))
            (:classpath-roots (deps/create-basis basis-opts)))))
