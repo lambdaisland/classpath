@@ -254,45 +254,38 @@
   logic, so that the system classloader doesn't shadow our own classpath
   entries."
   [cl urls]
-  (let [cp-files (map io/as-file urls)
-        filenames-in-jar (memoize
-                          (fn [^File jar-file]
-                            (set
-                             (eduction
-                              (filter #(not (.isDirectory ^JarEntry %)))
-                              (map #(.getName ^JarEntry %))
-                              (enumeration-seq (.entries (JarFile. jar-file)))))))
-        find-resources (fn [^String name]
-                         (mapcat (fn [^File cp-entry]
-                                   (cond
-                                     (and (cp/jar-file? cp-entry)
-                                          (contains? (filenames-in-jar cp-entry) name))
-                                     [(URL. (str "jar:file:" cp-entry "!/" name))]
-                                     (and (not (= \/ (first name))) ;; the io/file call fails on absolute paths
-                                          (.exists (io/file cp-entry name)))
-                                     [(URL. (str "file:" (io/file cp-entry name)))]))
-                                 cp-files))]
+  (let [parent-loader (parent cl)]
     (proxy [URLClassLoader] [^String (str "lambdaisland/"
                                           (gensym "priority-classloader"))
                              ^"[Ljava.net.URL;" (into-array URL urls)
                              ^ClassLoader cl]
       (getResource [name]
-        (or (first (find-resources name))
+        ;; `cl` is assumed to be the bottom-most DynamcClassLoader, which is
+        ;; sitting directly above the application classloader
+        ;;
+        ;; - priority-classloader
+        ;; - DynamicClassLoader
+        ;; - app classloader
+        ;;
+        ;; The normal lookup order is bottom to top, we reverse that here by
+        ;; first checking our own classpath, then the DCL, and only then handing
+        ;; it to the app cl, which can further traverse down the chain.
+        (or (.findResource this name)
             ;; reflection warning because findResource is protected, but we're a
             ;; subclass so it seems to be ok?
-            (.findResource (parent this) name)
-            (.getResource (parent this) name)))
+            (.findResource cl name)
+            (.getResource parent-loader name)))
       (getResources [name]
         (java.util.Collections/enumeration
          (distinct
           (concat
-           (find-resources name)
+           (.findResources this name)
            (mapcat
             enumeration-seq
             ;; reflection warning because findResource is protected, but we're a
             ;; subclass so it seems to be ok?
-            [(.findResources (parent this) name)
-             (.getResources (parent (parent this)) name)]))))))))
+            [(.findResources cl name)
+             (.getResources parent-loader name)]))))))))
 
 (def fg-red "\033[0;31m")
 (def fg-green "\033[0;32m")
@@ -334,6 +327,25 @@
 (defn debug? []
   (= "true" (System/getProperty "lambdaisland.classpath.debug")))
 
+(defn debug!
+  ([]
+   (debug! true))
+  ([enable?]
+   (System/setProperty "lambdaisland.classpath.debug" (str enable?))))
+
+(defn ensure-trailing-slash
+  "URLClassPath looks for a trailing slash to determine whether something is a
+  directory instead of a jar, so add trailing slashes to everything that doesn't
+  look like a JAR."
+  [^String path]
+  (cond
+    (or (.endsWith path ".jar") (.endsWith path "/"))
+    path
+    (.isDirectory (io/file path))
+    (str path "/")
+    :else
+    path))
+
 (defn install-priority-loader!
   "Install the new priority loader as immediate parent of the bottom-most
   DynamicClassloader, discarding any further descendants. After this the chain is
@@ -359,7 +371,7 @@
    (when (debug?)
      (println "Installing priority-classloader")
      (run! #(println "-" %) paths))
-   (let [urls (map #(URL. (str "file:" %)) paths)
+   (let [urls (map #(URL. (str "file:" (ensure-trailing-slash %))) paths)
          current-thread (Thread/currentThread)
          dyn-cl (or (root-loader (context-classloader current-thread))
                     (clojure.lang.DynamicClassLoader. (app-loader)))
