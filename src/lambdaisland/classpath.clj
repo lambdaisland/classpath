@@ -278,14 +278,13 @@
       (getResources [name]
         (java.util.Collections/enumeration
          (distinct
-          (concat
-           (.findResources this name)
-           (mapcat
-            enumeration-seq
-            ;; reflection warning because findResource is protected, but we're a
-            ;; subclass so it seems to be ok?
-            [(.findResources cl name)
-             (.getResources parent-loader name)]))))))))
+          (mapcat
+           enumeration-seq
+           ;; reflection warning because findResource is protected, but we're a
+           ;; subclass so it seems to be ok?
+           [(.findResources this name)
+            (.findResources cl name)
+            (.getResources parent-loader name)])))))))
 
 (def fg-red "\033[0;31m")
 (def fg-green "\033[0;32m")

@@ -6,7 +6,7 @@
 (licp/classpath-chain)
 (licp/classloader-chain)
 
-(licp/update-classpath! {:extra {:paths ["repl_session"]}})
+(licp/update-classpath! {:extra {:paths ["repl_session/"]}})
 
 (licp/debug! false)
 
