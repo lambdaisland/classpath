@@ -6,7 +6,7 @@
 (lioss/main
  {:license          :mpl
   :inception-year   2021
-  :description      ""
+  :description      "Classpath utilities"
   :group-id         "com.lambdaisland"})
 
 ;; Local Variables:
