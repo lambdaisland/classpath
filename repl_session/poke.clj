@@ -10,7 +10,7 @@
 
 (licp/debug! false)
 
-(clojure.java.io/resource "poke.clj")
+(licp/resources "poke.clj")
 
 (map (juxt licp/cl-id #(.getResource % "poke.clj"))
      (licp/classloader-chain))

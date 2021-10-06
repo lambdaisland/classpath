@@ -28,11 +28,13 @@
   (let [coords (z/sexpr loc)
         git-url (:git/url coords)
         git-dir (gitlibs-impl/git-dir git-url)
-        git-branch (:git/branch coords "main")
         _ (when-not (.isDirectory (io/file git-dir))
             (gitlibs-impl/git-clone-bare git-url git-dir))
         _ (gitlibs-impl/git-fetch git-dir)
-        sha (gitlibs-impl/git-rev-parse (str git-dir) git-branch)]
+        sha (some #(and % (gitlibs-impl/git-rev-parse (str git-dir) %))
+                  [(:git/branch coords)
+                   "main"
+                   "master"])]
     (z/assoc loc :git/sha sha)))
 
 (defn git-pull-lib
@@ -49,8 +51,8 @@
               (if-let [loc (z/get (z/get $ :deps) lib)]
                 (z/up (z/up (git-pull-lib* loc lib)))
                 $)
-              (z/get $ :aliases)
-              (if-let [aliases (z/sexpr $)]
+
+              (if-let [aliases (some-> $ (z/get :aliases) z/sexpr)]
                 (reduce (fn [loc alias]
                           (reduce
                            (fn [loc dep-type]
