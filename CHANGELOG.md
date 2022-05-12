@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fix typo in the README's example and one in doc-string
+
 ## Added
 
 ## Fixed

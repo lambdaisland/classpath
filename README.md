@@ -65,7 +65,7 @@ Add/override the classpath based on the current deps.edn.
 Access specific class loaders
 
 ```clojure
-(licp/context-class-loader)
+(licp/context-classloader)
 (licp/base-loader)
 (licp/root-loader)
 (licp/compiler-loader)

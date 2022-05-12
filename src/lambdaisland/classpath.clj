@@ -94,7 +94,7 @@
   (clojure.lang.RT/baseLoader))
 
 (defn cl-name
-  "Get a classlaoders's defined name"
+  "Get a classloaders's defined name"
   [^ClassLoader cl]
   (.getName cl))
 
