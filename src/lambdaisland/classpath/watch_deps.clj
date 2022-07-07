@@ -9,7 +9,10 @@
 (def ^:private watcher (atom nil))
 (def ^:private deps-hash (atom nil))
 
+;; lifted from https://gist.github.com/oliyh/0c1da9beab43766ae2a6abc9507e732a
 (defn- debounce
+  "Returns a debounced `f` that will execute after `timeout` and cancel pending
+   invocations if called again before `timeout` has elapsed"
   [f timeout]
   (let [timer (Timer.)
         task (atom nil)]
