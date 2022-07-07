@@ -2,6 +2,8 @@
 
 - Fix typo in the README's example and one in doc-string
 
+- Use native `java.nio.file.WatchService` for monitoring project folder changes.
+
 ## Added
 
 ## Fixed

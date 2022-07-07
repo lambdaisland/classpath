@@ -3,10 +3,11 @@
   (:require [clojure.java.classpath :as cp]
             [clojure.tools.deps.alpha :as deps]
             [lambdaisland.classpath :as licp])
-  (:import [java.nio.file FileSystems StandardWatchEventKinds WatchEvent$Kind]
-           [java.util Timer TimerTask]))
+  (:import (java.nio.file FileSystems StandardWatchEventKinds WatchEvent$Kind)
+           (java.util Timer TimerTask)))
 
 (def ^:private watcher (atom nil))
+
 (def ^:private deps-hash (atom nil))
 
 ;; lifted from https://gist.github.com/oliyh/0c1da9beab43766ae2a6abc9507e732a
@@ -99,14 +100,6 @@
              (future-cancel w))
            nil)))
 
-
 (comment
   (start! {:aliases [:dev]})
   (stop!))
-
-
-
-
-
-
-
