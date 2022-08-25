@@ -1,4 +1,4 @@
-{:paths ["src" "resources"]
+{:paths ["src"]
 
  :deps
  {rewrite-clj/rewrite-clj {:mvn/version "1.1.45"}
