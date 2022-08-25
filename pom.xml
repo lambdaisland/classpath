@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.lambdaisland</groupId>
   <artifactId>classpath</artifactId>
-  <version>0.0.27</version>
+  <version>0.1.33</version>
   <name>classpath</name>
   <description>Classpath utilities</description>
   <url>https://github.com/lambdaisland/classpath</url>
@@ -12,6 +12,9 @@
     <name>Lambda Island</name>
     <url>https://lambdaisland.com</url>
   </organization>
+  <properties>
+    <project class="build sourceEncoding">UTF-8</project>
+  </properties>
   <licenses>
     <license>
       <name>MPL-2.0</name>
@@ -22,18 +25,18 @@
     <url>https://github.com/lambdaisland/classpath</url>
     <connection>scm:git:git://github.com/lambdaisland/classpath.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/classpath.git</developerConnection>
-    <tag>685664dda160e3008e4baa453c0fe68a4cd38d37</tag>
+    <tag>c485c27712f715eb1e68a542b3032a2e33399f29</tag>
   </scm>
   <dependencies>
     <dependency>
       <groupId>rewrite-clj</groupId>
       <artifactId>rewrite-clj</artifactId>
-      <version>1.0.682-alpha</version>
+      <version>1.1.45</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>tools.deps.alpha</artifactId>
-      <version>0.12.1030</version>
+      <version>0.14.1222</version>
     </dependency>
     <dependency>
       <groupId>com.lambdaisland</groupId>
@@ -66,6 +69,10 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -74,7 +81,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>685664dda160e3008e4baa453c0fe68a4cd38d37</git-revision>
+              <git-revision>c485c27712f715eb1e68a542b3032a2e33399f29</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
