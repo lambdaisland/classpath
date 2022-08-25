@@ -1,8 +1,8 @@
 {:paths ["src" "resources"]
 
  :deps
- {rewrite-clj/rewrite-clj {:mvn/version "1.0.682-alpha"}
-  org.clojure/tools.deps.alpha {:mvn/version "0.12.1030"}
+ {rewrite-clj/rewrite-clj {:mvn/version "1.1.45"}
+  org.clojure/tools.deps.alpha {:mvn/version "0.14.1222"}
   com.lambdaisland/shellutils {:mvn/version "0.0.10"}
   org.clojure/java.classpath {:mvn/version "1.0.0"}
   com.nextjournal/beholder {:mvn/version "1.0.0"}}}

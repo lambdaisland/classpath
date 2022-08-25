@@ -4,6 +4,8 @@
 
 ## Added
 
+- Support watching multiple `deps.edn` files referenced via `:local/root`
+
 ## Fixed
 
 ## Changed

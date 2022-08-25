@@ -2,24 +2,45 @@
   "Watch deps.edn for changes"
   (:require [clojure.java.classpath :as cp]
             [clojure.string :as str]
+            [clojure.java.io :as io]
             [clojure.tools.deps.alpha :as deps]
             [lambdaisland.classpath :as licp]
-            [nextjournal.beholder :as beholder]))
+            [nextjournal.beholder :as beholder])
+  (:import java.util.regex.Pattern
+           java.nio.file.LinkOption
+           java.nio.file.Paths))
 
 (def watcher (atom nil))
 
-(defn- on-event [opts {:keys [type path]}]
-  (when (and (= :modify type)
-             ;; On Mac the path will be absolute and include the watched dir,
-             ;; e.g. `/Users/x/project/./deps.edn`
-             ;; On other systems it seems to be relative, like `./deps.edn`
-             (str/ends-with? (str path) "./deps.edn"))
-    (println "✨ Reloading deps.edn ✨")
-    (let [new-paths (remove (set (map str (cp/system-classpath)))
-                            (:classpath-roots (deps/create-basis opts)))]
-      (doseq [path new-paths]
-        (println "- " path))
-      (licp/install-priority-loader! new-paths))))
+(defn canonical-path [p]
+  (.toRealPath (Paths/get p (into-array String [])) (into-array LinkOption [])))
+
+(def process-root-path (canonical-path "."))
+
+(defn- on-event [deps-path opts {:keys [type path]}]
+  (locking watcher
+    (when (and (= :modify type)
+               ;; Before we used "." as the watch path, resulting in a
+               ;; difference between mac, where the path would look like this
+               ;; `/Users/x/project/./deps.edn`, vs Linux where the path would
+               ;; look like this `./deps.edn`.
+               ;;
+               ;; We now turn `"."` into a canonical path before starting the
+               ;; watcher, which means we get fully qualified filenames for both
+               ;; in this equality check.
+               (= path deps-path))
+      (try
+        (println "✨ Reloading"
+                 (str (.relativize process-root-path path))
+                 "✨")
+        (let [added-paths (remove (set (map str (cp/system-classpath)))
+                                  (:classpath-roots (deps/create-basis opts)))]
+          (doseq [path added-paths]
+            (println "+" (str/replace path #"^.*/\.m2/repository/" "")))
+          (licp/install-priority-loader! added-paths))
+        (catch Exception e
+          (println "Error while reloading deps.edn")
+          (println e))))))
 
 (defn start!
   "Start a file system watcher to pick up changes in `deps.edn'
@@ -35,9 +56,20 @@
   (swap! watcher
          (fn [w]
            (when w
-             (println "Stopping existing `deps.edn' watcher")
-             (beholder/stop w))
-           (beholder/watch (partial on-event opts) "."))))
+             (println "Stopping existing `deps.edn' watchers")
+             (run! beholder/stop w))
+           (let [basis (deps/create-basis opts)
+                 roots (cons (str process-root-path)
+                             (when (:include-local-roots? opts)
+                               (->> (vals (:libs basis))
+                                    (keep :local/root)
+                                    (map canonical-path)
+                                    (map str))))]
+             (doall
+              (for [root roots]
+                (beholder/watch
+                 (partial #'on-event (Paths/get root (into-array String ["deps.edn"])) opts)
+                 root)))))))
 
 (defn stop!
   "Stop a previously started watcher"
@@ -48,6 +80,9 @@
              (beholder/stop w))
            nil)))
 
-
 (comment
-  (start! {:aliases [:dev]}))
+  (start! {:aliases [:dev]})
+
+  (deps/create-basis {:aliases [:backend]
+                      :extra '{cider/cider-nrepl #:mvn{:version "0.28.5"}
+                               refactor-nrepl/refactor-nrepl #:mvn{:version "3.5.2"}}}))

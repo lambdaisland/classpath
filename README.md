@@ -30,6 +30,10 @@ versions, and add them to the classpath.
 Caveat: we can only *add* to the classpath, any dependencies that were present
 when the app started will remain accessible.
 
+You can pass the option `:include-local-roots? true` to also watch any
+`deps.edn` of projects that are referenced via `:local/root` in your project's
+`deps.edn`
+
 ### Classpath inspection and manipulation
 
 ```clojure
