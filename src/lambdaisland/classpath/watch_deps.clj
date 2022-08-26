@@ -30,16 +30,18 @@
                ;; in this equality check.
                (= path deps-path))
       (try
-        (println "✨ Reloading"
+        (println "[watch-deps] ✨ Reloading"
                  (str (.relativize process-root-path path))
                  "✨")
         (let [added-paths (remove (set (map str (cp/system-classpath)))
                                   (:classpath-roots (deps/create-basis opts)))]
+          (when (not (seq added-paths))
+            (println "[watch-deps] No new libraries to add."))
           (doseq [path added-paths]
-            (println "+" (str/replace path #"^.*/\.m2/repository/" "")))
+            (println "[watch-deps] +" (str/replace path #"^.*/\.m2/repository/" "")))
           (licp/install-priority-loader! added-paths))
         (catch Exception e
-          (println "Error while reloading deps.edn")
+          (println "[watch-deps] Error while reloading deps.edn")
           (println e))))))
 
 (defn start!
@@ -85,4 +87,6 @@
 
   (deps/create-basis {:aliases [:backend]
                       :extra '{cider/cider-nrepl #:mvn{:version "0.28.5"}
-                               refactor-nrepl/refactor-nrepl #:mvn{:version "3.5.2"}}}))
+                               refactor-nrepl/refactor-nrepl #:mvn{:version "3.5.2"}}})
+  (remove (set (map str (cp/system-classpath)))
+          (:classpath-roots (deps/create-basis opts))))

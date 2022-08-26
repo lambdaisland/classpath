@@ -1,10 +1,10 @@
 # Unreleased
 
-## Added
-
-## Fixed
-
 ## Changed
+
+- Upgrade directory-watcher to the latest version
+- Prefix output from watch-deps with `[watch-deps]`
+- Print a message when the watcher triggers, but no classpath changes are made
 
 # 0.1.33 (2022-08-25 / fd51db4)
 
