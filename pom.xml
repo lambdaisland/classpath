@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.lambdaisland</groupId>
   <artifactId>classpath</artifactId>
-  <version>0.1.33</version>
+  <version>0.2.37</version>
   <name>classpath</name>
   <description>Classpath utilities</description>
   <url>https://github.com/lambdaisland/classpath</url>
@@ -25,7 +25,7 @@
     <url>https://github.com/lambdaisland/classpath</url>
     <connection>scm:git:git://github.com/lambdaisland/classpath.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/classpath.git</developerConnection>
-    <tag>c485c27712f715eb1e68a542b3032a2e33399f29</tag>
+    <tag>c151a467cc067731ace934d21eca21b55ab8832b</tag>
   </scm>
   <dependencies>
     <dependency>
@@ -53,15 +53,17 @@
       <artifactId>beholder</artifactId>
       <version>1.0.0</version>
     </dependency>
+    <dependency>
+      <groupId>io.methvin</groupId>
+      <artifactId>directory-watcher</artifactId>
+      <version>0.16.1</version>
+    </dependency>
   </dependencies>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
       <resource>
         <directory>src</directory>
-      </resource>
-      <resource>
-        <directory>resources</directory>
       </resource>
     </resources>
     <plugins>
@@ -81,7 +83,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>c485c27712f715eb1e68a542b3032a2e33399f29</git-revision>
+              <git-revision>c151a467cc067731ace934d21eca21b55ab8832b</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
