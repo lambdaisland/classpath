@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.lambdaisland</groupId>
   <artifactId>classpath</artifactId>
-  <version>0.3.40</version>
+  <version>0.4.44</version>
   <name>classpath</name>
   <description>Classpath utilities</description>
   <url>https://github.com/lambdaisland/classpath</url>
@@ -25,7 +25,7 @@
     <url>https://github.com/lambdaisland/classpath</url>
     <connection>scm:git:git://github.com/lambdaisland/classpath.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/classpath.git</developerConnection>
-    <tag>022ba24ed71e966834c194b5ad16971fbb219342</tag>
+    <tag>89299ae811c84f9f77534bb94a7dbb4ac112f66e</tag>
   </scm>
   <dependencies>
     <dependency>
@@ -83,7 +83,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>022ba24ed71e966834c194b5ad16971fbb219342</git-revision>
+              <git-revision>89299ae811c84f9f77534bb94a7dbb4ac112f66e</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
