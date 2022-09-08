@@ -2,9 +2,8 @@
 
 ## Added
 
-## Fixed
-
-## Changed
+- [watcher] Add a `:watch-paths` option, to watch additional files. Presumable
+  in combination with a custom `:basis-fn`
 
 # 0.3.40 (2022-09-08 / 73c9529)
 
