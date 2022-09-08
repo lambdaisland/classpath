@@ -1,6 +1,7 @@
 (ns poke
   (:require [lambdaisland.classpath :as licp]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clojure.java.io :as io])
   (:import clojure.lang.DynamicClassLoader))
 
 (licp/classpath-chain)
@@ -28,3 +29,10 @@
         (recur (.getParent loader))))))
 
 (has-dcl? (licp/parent (licp/root-loader)))
+
+(keep (fn [{:local/keys [root]}]
+        (when (and root (.exists (io/file root "shadow-cljs.edn")))
+          root))
+      (vals (:libs (licp/read-basis))))
+
+(io/resource "public/index.html")

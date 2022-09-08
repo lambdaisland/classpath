@@ -2,7 +2,12 @@
 
 ## Added
 
+- [watcher] Support for custom basis-fn
+- [watcher] Check for aliases in `:extra` deps file
+
 ## Fixed
+
+- [watcher] Fix watcher stop! function
 
 ## Changed
 
