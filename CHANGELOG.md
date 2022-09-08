@@ -1,3 +1,11 @@
+# Unreleased
+
+## Added
+
+## Fixed
+
+## Changed
+
 # 0.3.40 (2022-09-08 / 73c9529)
 
 ## Added
