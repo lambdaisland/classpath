@@ -93,9 +93,10 @@
                                          (map canonical-path)
                                          (map #(path % "deps.edn"))))
                               (string? (:extra opts))
-                              (conj (canonical-path (:extra opts))))
+                              (conj (canonical-path (:extra opts)))
+                              :always
+                              (concat (:watch-paths opts)))
                  roots (group-by parent-path deps-paths)]
-             (prn roots)
              (doall
               (for [[root deps-paths] roots]
                 (beholder/watch
