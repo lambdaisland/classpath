@@ -1,9 +1,9 @@
 {:paths ["src"]
 
  :deps
- {rewrite-clj/rewrite-clj      {:mvn/version "1.1.45"}
-  org.clojure/tools.deps.alpha {:mvn/version "0.14.1222"}
+ {rewrite-clj/rewrite-clj      {:mvn/version "1.1.47"}
+  org.clojure/tools.deps.alpha {:mvn/version "0.15.1254"}
   com.lambdaisland/shellutils  {:mvn/version "0.0.10"}
   org.clojure/java.classpath   {:mvn/version "1.0.0"}
-  com.nextjournal/beholder     {:mvn/version "1.0.0"}
-  io.methvin/directory-watcher {:mvn/version "0.16.1"}}}
+  com.nextjournal/beholder     {:mvn/version "1.0.2"}
+  io.methvin/directory-watcher {:mvn/version "0.18.0"}}}
