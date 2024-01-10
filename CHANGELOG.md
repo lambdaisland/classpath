@@ -1,10 +1,8 @@
 # Unreleased
 
-## Added
-
-## Fixed
-
 ## Changed
+
+- Upgraded dependencies
 
 # 0.4.44 (2022-09-08 / 0c66dda)
 
