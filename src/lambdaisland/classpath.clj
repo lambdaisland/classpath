@@ -383,6 +383,11 @@
        (try
          (Thread/sleep 100)
          (doseq [^Thread thread (.keySet (Thread/getAllStackTraces))
+                 ;; InnocuousThread#setContextClassLoader throws
+                 ;; SecurityException, so we skip those. We can't do an
+                 ;; `instance?` check because the module jdk.internal.misc is
+                 ;; private.
+                 :when (not (= "class jdk.internal.misc.InnocuousThread" (str (class thread))))
                  ;; Install the new loader in every thread that has a Clojure
                  ;; loader, and always in the thread this is invoked in, even if
                  ;; for some reason it does not yet have a Clojure loader
