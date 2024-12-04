@@ -1,10 +1,8 @@
 # Unreleased
 
-## Added
-
 ## Fixed
 
-## Changed
+- Fix handling of InnocuousThread (i.e. skip them, not much more we can do)
 
 # 0.2.37 (2022-08-26 / 34be62f)
 
