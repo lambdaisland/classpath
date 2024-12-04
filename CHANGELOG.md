@@ -3,6 +3,7 @@
 ## Fixed
 
 - Fix handling of InnocuousThread (i.e. skip them, not much more we can do)
+- Version bumps
 
 # 0.2.37 (2022-08-26 / 34be62f)
 
