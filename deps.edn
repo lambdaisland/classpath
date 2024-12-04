@@ -6,4 +6,4 @@
   com.lambdaisland/shellutils  {:mvn/version "0.3.20"}
   org.clojure/java.classpath   {:mvn/version "1.0.0"}
   com.nextjournal/beholder     {:mvn/version "1.0.2"}
-  io.methvin/directory-watcher {:mvn/version "0.16.1"}}}
+  io.methvin/directory-watcher {:mvn/version "0.18.0"}}}

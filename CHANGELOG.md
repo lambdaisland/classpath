@@ -1,8 +1,26 @@
-# Unreleased
+# 0.5.48 (2024-01-10 / 2228a54)
+
+## Changed
+
+- Upgraded dependencies
+
+# 0.4.44 (2022-09-08 / 0c66dda)
 
 ## Added
 
+- [watcher] Add a `:watch-paths` option, to watch additional files. Presumable
+  in combination with a custom `:basis-fn`
+
+# 0.3.40 (2022-09-08 / 73c9529)
+
+## Added
+
+- [watcher] Support for custom basis-fn
+- [watcher] Check for aliases in `:extra` deps file
+
 ## Fixed
+
+- [watcher] Fix watcher stop! function
 
 ## Changed
 
