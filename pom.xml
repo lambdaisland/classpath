@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.lambdaisland</groupId>
   <artifactId>classpath</artifactId>
-  <version>0.2.37</version>
+  <version>0.3.43</version>
   <name>classpath</name>
   <description>Classpath utilities</description>
   <url>https://github.com/lambdaisland/classpath</url>
@@ -25,13 +25,13 @@
     <url>https://github.com/lambdaisland/classpath</url>
     <connection>scm:git:git://github.com/lambdaisland/classpath.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/classpath.git</developerConnection>
-    <tag>c151a467cc067731ace934d21eca21b55ab8832b</tag>
+    <tag>b4571fa1f14023f5c124dea9119c44ddc7bf4192</tag>
   </scm>
   <dependencies>
     <dependency>
       <groupId>rewrite-clj</groupId>
       <artifactId>rewrite-clj</artifactId>
-      <version>1.1.45</version>
+      <version>1.1.49</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
@@ -41,7 +41,7 @@
     <dependency>
       <groupId>com.lambdaisland</groupId>
       <artifactId>shellutils</artifactId>
-      <version>0.0.10</version>
+      <version>0.3.20</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
@@ -51,7 +51,7 @@
     <dependency>
       <groupId>com.nextjournal</groupId>
       <artifactId>beholder</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.2</version>
     </dependency>
     <dependency>
       <groupId>io.methvin</groupId>
@@ -83,7 +83,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>c151a467cc067731ace934d21eca21b55ab8832b</git-revision>
+              <git-revision>b4571fa1f14023f5c124dea9119c44ddc7bf4192</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
