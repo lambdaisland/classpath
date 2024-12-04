@@ -1,4 +1,4 @@
-# Unreleased
+# 0.3.43 (2024-12-04 / df15f2e)
 
 ## Fixed
 
