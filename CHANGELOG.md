@@ -1,3 +1,11 @@
+# Unreleased
+
+## Added
+
+## Fixed
+
+## Changed
+
 # 0.6.58 (2024-12-04 / 3edd4ca)
 
 ## Fixed
