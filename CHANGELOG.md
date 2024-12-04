@@ -1,3 +1,13 @@
+# Unreleased
+
+## Fixed
+
+- Fix handling of InnocuousThread (i.e. skip them, not much more we can do)
+
+## Changed
+
+- Upgraded dependencies
+
 # 0.5.48 (2024-01-10 / 2228a54)
 
 ## Changed
@@ -21,15 +31,6 @@
 ## Fixed
 
 - [watcher] Fix watcher stop! function
-
-## Changed
-
-# 0.3.43 (2024-12-04 / df15f2e)
-
-## Fixed
-
-- Fix handling of InnocuousThread (i.e. skip them, not much more we can do)
-- Version bumps
 
 # 0.2.37 (2022-08-26 / 34be62f)
 
