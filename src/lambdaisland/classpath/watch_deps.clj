@@ -3,7 +3,7 @@
   (:require [clojure.java.classpath :as cp]
             [clojure.string :as str]
             [clojure.java.io :as io]
-            [clojure.tools.deps.alpha :as deps]
+            [clojure.tools.deps :as deps]
             [lambdaisland.classpath :as licp]
             [nextjournal.beholder :as beholder])
   (:import java.util.regex.Pattern
