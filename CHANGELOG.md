@@ -1,12 +1,9 @@
 # Unreleased
 
-- Upgrade dependencies
-
-## Added
-
-## Fixed
-
 ## Changed
+
+- Upgrade dependencies
+- Switch from tools.deps.alpha to tools.deps
 
 # 0.6.58 (2024-12-04 / 3edd4ca)
 
