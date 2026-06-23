@@ -1,3 +1,11 @@
+# Unreleased
+
+## Added
+
+## Fixed
+
+## Changed
+
 # 0.7.66 (2026-06-23 / 5186682)
 
 ## Changed

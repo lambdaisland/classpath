@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.lambdaisland</groupId>
   <artifactId>classpath</artifactId>
-  <version>0.6.58</version>
+  <version>0.7.66</version>
   <name>classpath</name>
   <description>Classpath utilities</description>
   <url>https://github.com/lambdaisland/classpath</url>
@@ -25,13 +25,13 @@
     <url>https://github.com/lambdaisland/classpath</url>
     <connection>scm:git:git://github.com/lambdaisland/classpath.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/classpath.git</developerConnection>
-    <tag>cae7179067faeb0a97b661737034fe86c3b6bcd8</tag>
+    <tag>2d3d39ee9cf3a98322e509a5a91ed3a948e11391</tag>
   </scm>
   <dependencies>
     <dependency>
       <groupId>rewrite-clj</groupId>
       <artifactId>rewrite-clj</artifactId>
-      <version>1.1.49</version>
+      <version>1.2.54</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
@@ -46,17 +46,17 @@
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>java.classpath</artifactId>
-      <version>1.0.0</version>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>com.nextjournal</groupId>
       <artifactId>beholder</artifactId>
-      <version>1.0.2</version>
+      <version>1.0.3</version>
     </dependency>
     <dependency>
       <groupId>io.methvin</groupId>
       <artifactId>directory-watcher</artifactId>
-      <version>0.18.0</version>
+      <version>0.19.1</version>
     </dependency>
   </dependencies>
   <build>
@@ -64,6 +64,9 @@
     <resources>
       <resource>
         <directory>src</directory>
+      </resource>
+      <resource>
+        <directory>test</directory>
       </resource>
     </resources>
     <plugins>
@@ -83,7 +86,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>cae7179067faeb0a97b661737034fe86c3b6bcd8</git-revision>
+              <git-revision>2d3d39ee9cf3a98322e509a5a91ed3a948e11391</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
