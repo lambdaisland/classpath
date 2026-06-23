@@ -1,7 +1,7 @@
 (ns lambdaisland.classpath
   (:require [rewrite-clj.zip :as z]
             [clojure.string :as str]
-            [clojure.tools.deps.alpha :as deps]
+            [clojure.tools.deps :as deps]
             [clojure.tools.gitlibs :as gitlibs]
             [clojure.tools.gitlibs.impl :as gitlibs-impl]
             [clojure.java.classpath :as cp]
