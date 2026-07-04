@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.lambdaisland</groupId>
   <artifactId>classpath</artifactId>
-  <version>0.7.66</version>
+  <version>0.8.70</version>
   <name>classpath</name>
   <description>Classpath utilities</description>
   <url>https://github.com/lambdaisland/classpath</url>
@@ -25,13 +25,13 @@
     <url>https://github.com/lambdaisland/classpath</url>
     <connection>scm:git:git://github.com/lambdaisland/classpath.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/classpath.git</developerConnection>
-    <tag>2d3d39ee9cf3a98322e509a5a91ed3a948e11391</tag>
+    <tag>62b4e8a1d7d17c723503990e3aa1d3543ecbed55</tag>
   </scm>
   <dependencies>
     <dependency>
       <groupId>rewrite-clj</groupId>
       <artifactId>rewrite-clj</artifactId>
-      <version>1.2.54</version>
+      <version>1.2.55</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
@@ -86,7 +86,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>2d3d39ee9cf3a98322e509a5a91ed3a948e11391</git-revision>
+              <git-revision>62b4e8a1d7d17c723503990e3aa1d3543ecbed55</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
