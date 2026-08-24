@@ -1,10 +1,8 @@
 # Unreleased
 
-## Added
-
-## Fixed
-
 ## Changed
+
+- Bump tools.deps, replace deprecated call
 
 # 0.8.70 (2026-07-04 / ea58636)
 
