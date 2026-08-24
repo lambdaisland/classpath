@@ -1,17 +1,22 @@
 (ns lambdaisland.classpath
-  (:require [rewrite-clj.zip :as z]
-            [clojure.string :as str]
-            [clojure.tools.deps :as deps]
-            [clojure.tools.gitlibs :as gitlibs]
-            [clojure.tools.gitlibs.impl :as gitlibs-impl]
-            [clojure.java.classpath :as cp]
-            [clojure.java.io :as io]
-            [lambdaisland.shellutils :as shellutils])
-  (:import (java.util.jar JarFile JarEntry)
-           (java.io File)
-           (java.lang ClassLoader)
-           (java.net URL URLClassLoader)
-           (clojure.lang DynamicClassLoader)))
+  "Classpath and classloader inspection, manipulation, and dependency
+  hot-reloading"
+  (:require
+   [rewrite-clj.zip :as z]
+   [clojure.string :as str]
+   [clojure.tools.deps :as deps]
+   [clojure.tools.deps.edn :as deps-edn]
+   [clojure.tools.gitlibs :as gitlibs]
+   [clojure.tools.gitlibs.impl :as gitlibs-impl]
+   [clojure.java.classpath :as cp]
+   [clojure.java.io :as io]
+   [lambdaisland.shellutils :as shellutils])
+  (:import
+   (java.util.jar JarFile JarEntry)
+   (java.io File)
+   (java.lang ClassLoader)
+   (java.net URL URLClassLoader)
+   (clojure.lang DynamicClassLoader)))
 
 #_(set! *warn-on-reflection* true)
 
@@ -21,7 +26,7 @@
   []
   (when-let [f (io/file (System/getProperty "clojure.basis"))]
     (if (and f (.exists f))
-      (deps/slurp-deps f)
+      (deps-edn/read-deps f)
       (throw (IllegalArgumentException. "No basis declared in clojure.basis system property")))))
 
 (defn git-pull-lib* [loc lib]
